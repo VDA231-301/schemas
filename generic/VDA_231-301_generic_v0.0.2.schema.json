@@ -1,5 +1,5 @@
 {
-  "$id": "https://github.com/VDA231-301/schemas/blob/VDA_231-301_generic_v0.0.2.schema.json",
+  "$id": "https://vda231-301.github.io/schemas/generic/VDA_231-301_generic_v0.0.2.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "VDA 231-301 TestReport JSON schema",
   "type": "object",
