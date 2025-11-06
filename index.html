@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VDA 231-301 Schema Repository</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .breadcrumb {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .directory-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .list-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f3f4;
+            transition: background-color 0.2s ease;
+        }
+
+        .item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .item-name {
+            flex-grow: 1;
+            font-weight: 500;
+        }
+
+        .item-name a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+        }
+
+        .item-name a:hover {
+            color: #667eea;
+        }
+
+        .item-info {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-left: auto;
+        }
+
+        .folder-icon {
+            fill: #ffc107;
+        }
+
+        .file-icon {
+            fill: #17a2b8;
+        }
+
+        .json-icon {
+            fill: #28a745;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .search-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>VDA 231-301 Schema Repository</h1>
+        <p>Browse and download schema files for the VDA 231-301 standard</p>
+    </div>
+
+    <div class="breadcrumb">
+        <span id="breadcrumb-path">📁 /</span>
+    </div>
+
+    <div class="search-box">
+        <input type="text" class="search-input" placeholder="Search files and folders..." id="searchInput" onkeyup="filterItems()">
+    </div>
+
+    <div class="directory-list">
+        <div class="list-header">
+            📋 Directory Contents
+        </div>
+        <div id="file-list">
+            <!-- Files will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>VDA 231-301 Schema Repository • Hosted on GitHub Pages</p>
+    </div>
+
+    <script>
+        // File structure - this would ideally be generated server-side or via API
+        const fileStructure = {
+            '/': {
+                type: 'directory',
+                children: {
+                    'generic/': {
+                        type: 'directory',
+                        children: {
+                            'VDA_231-301_generic_v0.0.2.schema.json': {
+                                type: 'file',
+                                size: 'JSON Schema',
+                                description: 'VDA 231-301 Generic Schema v0.0.2'
+                            },
+                            'VDA_231-301_generic_v0.1.0.schema.json': {
+                                type: 'file',
+                                size: 'JSON Schema',
+                                description: 'VDA 231-301 Generic Schema v0.1.0'
+                            },
+                            'VDA_231-301_generic_v0.1.1.schema.json': {
+                                type: 'file',
+                                size: 'JSON Schema',
+                                description: 'VDA 231-301 Generic Schema v0.1.1'
+                            },
+                            'VDA_231-301_generic_v0.2.0.schema.json': {
+                                type: 'file',
+                                size: 'JSON Schema',
+                                description: 'VDA 231-301 Generic Schema v0.2.0'
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        let currentPath = '/';
+
+        function getIcon(item, name) {
+            if (item.type === 'directory') {
+                return `<svg class="icon folder-icon" viewBox="0 0 24 24">
+                    <path d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" />
+                </svg>`;
+            } else if (name.endsWith('.json')) {
+                return `<svg class="icon json-icon" viewBox="0 0 24 24">
+                    <path d="M5,3H7V5H5V10A2,2 0 0,1 3,12A2,2 0 0,1 5,14V19H7V21H5C3.93,20.93 3.07,20.07 3,19V15A2,2 0 0,0 1,13H0V11H1A2,2 0 0,0 3,9V5A2,2 0 0,1 5,3M19,3A2,2 0 0,1 21,5V9A2,2 0 0,0 23,11H24V13H23A2,2 0 0,0 21,15V19A2,2 0 0,1 19,21H17V19H19V14A2,2 0 0,1 21,12A2,2 0 0,1 19,10V5H17V3H19Z" />
+                </svg>`;
+            } else {
+                return `<svg class="icon file-icon" viewBox="0 0 24 24">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                </svg>`;
+            }
+        }
+
+        function formatPath(path) {
+            if (path === '/') return '📁 /';
+            return '📁 ' + path.split('/').filter(p => p).map(p => p).join(' / ');
+        }
+
+        function renderDirectory(path) {
+            const pathParts = path === '/' ? [] : path.split('/').filter(p => p);
+            let current = fileStructure['/'];
+
+            // Navigate to current directory
+            for (const part of pathParts) {
+                current = current.children[part + '/'];
+                if (!current) {
+                    console.error('Path not found:', path);
+                    return;
+                }
+            }
+
+            document.getElementById('breadcrumb-path').textContent = formatPath(path);
+
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = '';
+
+            // Add back button if not in root
+            if (path !== '/') {
+                const parentPath = '/' + pathParts.slice(0, -1).join('/');
+                const backItem = document.createElement('div');
+                backItem.className = 'item';
+                backItem.innerHTML = `
+                    <svg class="icon" style="fill: #6c757d;" viewBox="0 0 24 24">
+                        <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+                    </svg>
+                    <div class="item-name">
+                        <a href="#" onclick="navigateTo('${parentPath}'); return false;">..</a>
+                    </div>
+                    <div class="item-info">Parent Directory</div>
+                `;
+                fileList.appendChild(backItem);
+            }
+
+            // Add directories and files
+            if (current && current.children) {
+                Object.entries(current.children).forEach(([name, item]) => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'item';
+                    itemElement.setAttribute('data-name', name.toLowerCase());
+
+                    const isDirectory = item.type === 'directory';
+                    const href = isDirectory ? `#` : name;
+                    const onclick = isDirectory ? `navigateTo('${path === '/' ? '' : path}/${name}'); return false;` : '';
+
+                    itemElement.innerHTML = `
+                        ${getIcon(item, name)}
+                        <div class="item-name">
+                            <a href="${href}" ${onclick ? `onclick="${onclick}"` : ''}>${name}</a>
+                        </div>
+                        <div class="item-info">${item.description || item.size || (isDirectory ? 'Directory' : 'File')}</div>
+                    `;
+
+                    fileList.appendChild(itemElement);
+                });
+            }
+        }
+
+        function navigateTo(path) {
+            currentPath = path || '/';
+            renderDirectory(currentPath);
+
+            // Update URL hash
+            if (path && path !== '/') {
+                window.location.hash = path;
+            } else {
+                window.location.hash = '';
+            }
+        }
+
+        function filterItems() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const items = document.querySelectorAll('.item[data-name]');
+
+            items.forEach(item => {
+                const name = item.getAttribute('data-name');
+                if (name.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Handle browser back/forward
+        window.addEventListener('hashchange', function() {
+            const path = window.location.hash.substring(1) || '/';
+            currentPath = path;
+            renderDirectory(path);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const initialPath = window.location.hash.substring(1) || '/';
+            navigateTo(initialPath);
+        });
+    </script>
+</body>
+</html>
