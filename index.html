@@ -285,8 +285,9 @@
                     itemElement.setAttribute('data-name', name.toLowerCase());
 
                     const isDirectory = item.type === 'directory';
-                    const href = isDirectory ? `#` : name;
-                    const onclick = isDirectory ? `navigateTo('${path === '/' ? '' : path}/${name}'); return false;` : '';
+                    const fullPath = path === '/' ? name : `${path}/${name}`;
+                    const href = isDirectory ? `#` : fullPath;
+                    const onclick = isDirectory ? `navigateTo('${fullPath}'); return false;` : '';
 
                     itemElement.innerHTML = `
                         ${getIcon(item, name)}
