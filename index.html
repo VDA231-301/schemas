@@ -185,48 +185,86 @@
     </div>
 
     <script>
-        // File structure - this would ideally be generated server-side or via API
-        const fileStructure = {
-            '/': {
-                type: 'directory',
-                children: {
-                    'generic/': {
-                        type: 'directory',
-                        children: {
-                            'VDA_231-301_generic_v0.0.2.schema.json': {
-                                type: 'file',
-                                size: 'JSON Schema',
-                                description: 'VDA 231-301 Generic Schema v0.0.2'
-                            },
-                            'VDA_231-301_generic_v0.1.0.schema.json': {
-                                type: 'file',
-                                size: 'JSON Schema',
-                                description: 'VDA 231-301 Generic Schema v0.1.0'
-                            },
-                            'VDA_231-301_generic_v0.1.1.schema.json': {
-                                type: 'file',
-                                size: 'JSON Schema',
-                                description: 'VDA 231-301 Generic Schema v0.1.1'
-                            },
-                            'VDA_231-301_generic_v0.2.0.schema.json': {
-                                type: 'file',
-                                size: 'JSON Schema',
-                                description: 'VDA 231-301 Generic Schema v0.2.0'
-                            }
-                        }
-                    }
-                }
-            }
-        };
+        // GitHub repository configuration
+        const GITHUB_OWNER = 'VDA231-301';
+        const GITHUB_REPO = 'schemas';
+        const GITHUB_BRANCH = 'main'; // or 'gh-pages' if that's your publishing branch
+        const GITHUB_PAGES_URL = `https://${GITHUB_OWNER.toLowerCase()}.github.io/${GITHUB_REPO}`;
 
+        // Cache for directory contents
+        const directoryCache = {};
         let currentPath = '/';
 
-        function getIcon(item, name) {
-            if (item.type === 'directory') {
+        // Fetch directory contents from GitHub API
+        async function fetchDirectoryContents(path) {
+            // Remove leading/trailing slashes and normalize
+            const cleanPath = path === '/' ? '' : path.replace(/^\/+|\/+$/g, '');
+
+            // Check cache first
+            const cacheKey = cleanPath || 'root';
+            if (directoryCache[cacheKey]) {
+                return directoryCache[cacheKey];
+            }
+
+            try {
+                const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${cleanPath}`;
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`GitHub API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Filter to only include directories and .json files
+                const filtered = data.filter(item => {
+                    return item.type === 'dir' ||
+                           (item.type === 'file' && item.name.endsWith('.json'));
+                });
+
+                // Cache the result
+                directoryCache[cacheKey] = filtered;
+                return filtered;
+            } catch (error) {
+                console.error('Error fetching directory contents:', error);
+                showError('Failed to load directory contents. Please check your internet connection.');
+                return [];
+            }
+        }
+
+        function showError(message) {
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = `
+                <div class="item" style="color: #dc3545; padding: 20px;">
+                    <span>⚠️ ${message}</span>
+                </div>
+            `;
+        }
+
+        function showLoading() {
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = `
+                <div class="item" style="padding: 20px;">
+                    <span>⏳ Loading directory contents...</span>
+                </div>
+            `;
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes || bytes === 0) return '';
+            const kb = bytes / 1024;
+            if (kb < 1) return `${bytes} B`;
+            if (kb < 1024) return `${kb.toFixed(1)} KB`;
+            return `${(kb / 1024).toFixed(1)} MB`;
+        }
+
+        function getIcon(item) {
+            // GitHub API uses 'dir' for directories
+            if (item.type === 'dir' || item.type === 'directory') {
                 return `<svg class="icon folder-icon" viewBox="0 0 24 24">
                     <path d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" />
                 </svg>`;
-            } else if (name.endsWith('.json')) {
+            } else if (item.name && item.name.endsWith('.json')) {
                 return `<svg class="icon json-icon" viewBox="0 0 24 24">
                     <path d="M5,3H7V5H5V10A2,2 0 0,1 3,12A2,2 0 0,1 5,14V19H7V21H5C3.93,20.93 3.07,20.07 3,19V15A2,2 0 0,0 1,13H0V11H1A2,2 0 0,0 3,9V5A2,2 0 0,1 5,3M19,3A2,2 0 0,1 21,5V9A2,2 0 0,0 23,11H24V13H23A2,2 0 0,0 21,15V19A2,2 0 0,1 19,21H17V19H19V14A2,2 0 0,1 21,12A2,2 0 0,1 19,10V5H17V3H19Z" />
                 </svg>`;
@@ -242,27 +280,23 @@
             return '📁 ' + path.split('/').filter(p => p).map(p => p).join(' / ');
         }
 
-        function renderDirectory(path) {
-            const pathParts = path === '/' ? [] : path.split('/').filter(p => p);
-            let current = fileStructure['/'];
+        async function renderDirectory(path) {
+            // Show loading state
+            showLoading();
 
-            // Navigate to current directory
-            for (const part of pathParts) {
-                current = current.children[part + '/'];
-                if (!current) {
-                    console.error('Path not found:', path);
-                    return;
-                }
-            }
-
+            // Update breadcrumb
             document.getElementById('breadcrumb-path').textContent = formatPath(path);
+
+            // Fetch directory contents
+            const items = await fetchDirectoryContents(path);
 
             const fileList = document.getElementById('file-list');
             fileList.innerHTML = '';
 
             // Add back button if not in root
             if (path !== '/') {
-                const parentPath = '/' + pathParts.slice(0, -1).join('/');
+                const pathParts = path.split('/').filter(p => p);
+                const parentPath = pathParts.length > 1 ? '/' + pathParts.slice(0, -1).join('/') : '/';
                 const backItem = document.createElement('div');
                 backItem.className = 'item';
                 backItem.innerHTML = `
@@ -277,28 +311,54 @@
                 fileList.appendChild(backItem);
             }
 
-            // Add directories and files
-            if (current && current.children) {
-                Object.entries(current.children).forEach(([name, item]) => {
-                    const itemElement = document.createElement('div');
-                    itemElement.className = 'item';
-                    itemElement.setAttribute('data-name', name.toLowerCase());
+            // Sort items: directories first, then files alphabetically
+            items.sort((a, b) => {
+                if (a.type === b.type) {
+                    return a.name.localeCompare(b.name);
+                }
+                return a.type === 'dir' ? -1 : 1;
+            });
 
-                    const isDirectory = item.type === 'directory';
-                    const fullPath = path === '/' ? name : `${path}/${name}`;
-                    const href = isDirectory ? `#` : fullPath;
-                    const onclick = isDirectory ? `navigateTo('${fullPath}'); return false;` : '';
+            // Add directories and files from GitHub API
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item';
+                itemElement.setAttribute('data-name', item.name.toLowerCase());
 
-                    itemElement.innerHTML = `
-                        ${getIcon(item, name)}
-                        <div class="item-name">
-                            <a href="${href}" ${onclick ? `onclick="${onclick}"` : ''}>${name}</a>
-                        </div>
-                        <div class="item-info">${item.description || item.size || (isDirectory ? 'Directory' : 'File')}</div>
-                    `;
+                const isDirectory = item.type === 'dir';
+                const itemPath = path === '/' ? `/${item.name}` : `${path}/${item.name}`;
+                // Construct GitHub Pages URL for files
+                const href = isDirectory ? `#` : `${GITHUB_PAGES_URL}${itemPath}`;
+                const onclick = isDirectory ? `navigateTo('${itemPath}'); return false;` : '';
 
-                    fileList.appendChild(itemElement);
-                });
+                // Format file info
+                let itemInfo = '';
+                if (isDirectory) {
+                    itemInfo = 'Directory';
+                } else if (item.size) {
+                    itemInfo = formatFileSize(item.size);
+                } else {
+                    itemInfo = 'JSON Schema';
+                }
+
+                itemElement.innerHTML = `
+                    ${getIcon(item)}
+                    <div class="item-name">
+                        <a href="${href}" ${onclick ? `onclick="${onclick}"` : ''} ${isDirectory ? '' : 'target="_blank"'}>${item.name}</a>
+                    </div>
+                    <div class="item-info">${itemInfo}</div>
+                `;
+
+                fileList.appendChild(itemElement);
+            });
+
+            // Show message if directory is empty
+            if (items.length === 0 && path === '/') {
+                fileList.innerHTML = `
+                    <div class="item" style="padding: 20px; color: #6c757d;">
+                        <span>📭 No JSON schemas found in this repository.</span>
+                    </div>
+                `;
             }
         }
 
