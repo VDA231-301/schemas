@@ -1,7 +1,8 @@
 # VDA 231‑301 – JSON Schemas
 ## Official Schema Releases
-🔗 This subschema is part of the VDA 231‑301 ecosystem
-→ https://github.com/VDA231-301
+🔗 This subschema is part of the **VDA 231‑301 open JSON standard ecosystem**
+➡ https://github.com/VDA231-301
+
 ## Purpose and Scope
 
 This repository contains the **official released JSON Schemas** of the  
